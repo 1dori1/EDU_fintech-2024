@@ -1,0 +1,86 @@
+python 기초 programming
+
+## iterrow() vs enumerate()
+#func. df.iterrow():
+
+data = {
+    '이름': ['세인', '승환', '지수'],
+    '나이': [23, 24, 22]
+}
+df = pd.DataFrame(data)
+
+ex) 
+for index,row in df.iterrows():
+  print(f"Index : {index},이름 : {row['이름']} , 나이: {row['나이']}")
+인덱스와 시리즈를 반환한다. > df 행접근
+
+#func. df.enumerate():
+
+names = ['세인', '승환', '지수']
+ages = [23, 24, 22]
+
+ex)
+
+for index, name in enumerate(names):
+    print(f"Index: {index}, 이름: {name}, 나이: {ages[index]}")
+인덱스와 값 반환  > 순차 자료형 값 접근
+
+
+
+##data 삭제하기
+1.조건에 맞는 값만 저장하기 / new_Data = [] 빈 배열 지정 후 / 
+iterrows()돌려서 if train[train['row'>=10] : new_data.append(row)
+2.조건에 안맞는 값 제외하고 저장하기 하기 / train_wrong = train[train['row']<10] , 
+new_train = train.loc[~train.index.isin(train_wrong.index)]
+3.조건에 맞는 값 저장하기 (1과 비슷) 
+new_train = train[~(train['row']<10)]
+
+
+##인코딩
+a = ['a','b','c']
+
+le = labelEncoder()
+le.fit(a)
+le.transform(a)
+-> array([0,1,2])
+
+ohe = OneHotEncoder()
+ohe.fit(a)
+ohe.transform(a)
+-> array([[1,0,0],[0,1,0],[0,0,1]])
+
+##data set prepare
+X = [[1], [2], [6], [8]]
+y = [6, 8, 9, 11]
+
+model = LinearRegression()
+model.fit(X,y)
+#predict
+model.predict([[4]])
+#설명
+(model.coef_, model.intercept_) 계수, bias
+
+model = DecisionTreeRegressor(random_state=0)
+model.fit(X,y)
+model.predict([[4]])
+#모델 설명
+fi = model.feature_importances_
+printf(fi)
+->feature 중요도 추출
+
+
+model = DecisionTreeRegressor(random_state=0)
+model.fit(X,y)
+model.predict([[4]])
+#모델 설명
+fi = model.feature_importances_
+printf(fi)
+->feature 중요도 추출
+
+train = pd.read_csv = '../csv'
+x_train = train.dropy(columns=[0])
+y_train = train[[0]]
+model = DecisionTreeClassifier(random_state=0)
+model.fit(x_train,y_train)
+model.predict([x_train.loc[3])
+model.featrue_importances_  -> train shape 28*28 개만큼 피쳐 중요도 나옴.

@@ -1,1 +1,81 @@
+lightgbm -> decisiontree library
+gc -> garbage collection
 
+#전처리
+-----------------------------------------------------
+df.info() data 확인
+object 변수는 숫자형 데이터로 바꿔줘야함 -> encoding
+-----------------------------------------------------
+결측치 확인
+train.isnull().sum()[train.isnull().sum() > 0]
+하나라도 있는 것들의 합만 표기
+-----------------------------------------------------
+여기서는 0으로 치환하고 학습
+train_dropna = train.dropna(axis=1) / column drop
+0으로 우선 치환해보고 다른것 해본 후 비교하는 것이 좋은 방법이라고 함.
+-----------------------------------------------------
+탐색적 자료 분석EDA
+train_dropna['col'].value_counts > 어떤 수가 많은지 확인
+object->수치형으로 바꾸기
+le = LabelEncoder()
+le.fit(train_dropna['MSZoning'])
+train_dropna['MSZoning'] = le.transform(train_dropna['MSZoning'])
+
+**한번에 (for문 돌려서)
+object_columns = train_dropna.select_dtypes(include='object').columns
+# numpy array에 저장
+object_columns_array = np.array(object_columns)
+
+for i in range(len(object_columns_array)):
+    le = LabelEncoder()
+    le.fit(train_dropna[object_columns_array[i]])
+    train_dropna[object_columns_array[i]] = le.transform(train_dropna[object_columns_array[i]]) 
+
+------------------------------------------------------
+기초 통계량 확인
+train_dropna.describe()
+------------------------------------------------------
+데이터 분리하기 
+1400 : 60 으로 분리하여 1400건으로 학습하고, 60건으로 검증
+train_data = train_dropna[:1400]
+valid_data = train_dropna[1400:]
+x_train,y_train, x_valid, y_valid으로 또 나눈다. 
+x_train = train_data.iloc[:,:80]
+>> valid도 똑같이 해준다.
+
+
+
+#모델 학습
+params = {'num_leaves' : 30 , ...  } < 변수 설정
+model = lgb.LGBMRegressor(**params)
+model.fit(x_train,y_train,eval_set = [(x_valid, y_valid)])
+
+#모델 예측
+valid_data['pred'] = model.predict(x_valid)
+
+#모델 검증
+하나의 숫자로 차이를 나타내고 싶다.!
+score = mean_squared_error(valid_data['SalePrice'], valid_data['pred']) ** 0.5
+실제값과 보통 이 score만큼 차이가 난다는 뜻.
+
+#사후 분석 (변수 중요도) _ model.feature_name_
+val_imp = pd.DataFrame(model.feature_importances_, index=model.feature_name_, columns=['imp'])
+시각화
+val_imp['imp'].plot(kind='bar')
+
+#모델 저장 pickle library
+ >저장 객체 정의
+save_object = [model, params, valid_data]
+ >저장된 객체 불러오기
+with open(file='my_model.pickle', mode='rb') as f:
+    load_object = pickle.load(f)
+ >저장객체 분리
+# 저장된 객체 분리
+model = load_object[0]
+params = load_object[1]
+valid_data = load_object[2]
+ > 예측
+valid_data['pred'] = model.predict(x_valid)
+ >검증
+score = mean_squared_error(valid_data['SalePrice'], valid_data['pred']) ** 0.5
+print('RMSE = ', score)

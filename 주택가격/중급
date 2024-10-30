@@ -1,0 +1,27 @@
+##튜닝
+>>> optuna library 이용하기 
+
+def model_tuner(trial, train_data, train_target, valid_data, valid_target):
+
+    params = {
+        'n_estimators': trial.suggest_int('n_estimators', 500, 7000),
+        'learning_rate': trial.suggest_float('learning_rate', 0.001, 0.1),
+        'num_leaves': trial.suggest_int('num_leaves', 20, 100),
+    }
+
+    model = lgb.LGBMRegressor(**params, random_state=42, objective='rmse', verbose=-1)
+    model.fit(train_data, train_target, eval_set=[(valid_data, valid_target)])
+    y_preds = model.predict(valid_data)
+    score = mean_squared_error(valid_target, y_preds, squared=False)
+
+    return score
+
+범위별로 파라매터 돌려보기.
+
+# 튜닝
+study = optuna.create_study(sampler=optuna.samplers.TPESampler(), direction='minimize')
+study.optimize(lambda trial: model_tuner(trial, x_train, y_train, x_valid, y_valid), n_trials=10)
+
+print('최적 파라메터 : ', study.best_trial.params)
+
+하나씩 다 해볼 수 없기 때문에 TPESampler()사용. < TREE 모델에 적합.
